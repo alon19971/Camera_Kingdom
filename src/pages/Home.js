@@ -1,51 +1,48 @@
 // src/pages/Home.js
-import React from 'react';
-import { Container, Row, Col, Carousel, Button } from 'react-bootstrap';
+import React, { useEffect, useState } from 'react';
+import { Container, Row, Col, Card } from 'react-bootstrap';
+import { getRecommendedProducts } from '../services/RecommendationService';
 
 const Home = () => {
+  const [recommendedProducts, setRecommendedProducts] = useState([]);
+
+  useEffect(() => {
+    const fetchRecommendedProducts = async () => {
+      try {
+        const products = await getRecommendedProducts();
+        console.log("Fetched recommended products:", products); // Log fetched products
+        setRecommendedProducts(products);
+      } catch (error) {
+        console.error("Error fetching recommended products:", error);
+      }
+    };
+    fetchRecommendedProducts();
+  }, []);
+
   return (
     <Container>
-      <Row>
+      <Row className="mb-4">
         <Col>
-          <h1>Welcome to Camera Kingdom</h1>
-          <p>Your one-stop shop for all photography needs.</p>
-          <Carousel>
-            <Carousel.Item>
-              <img
-                className="d-block w-100"
-                src="https://via.placeholder.com/800x400.png?text=Camera+1"
-                alt="First slide"
-              />
-              <Carousel.Caption>
-                <h3>First slide label</h3>
-                <p>Nulla vitae elit libero, a pharetra augue mollis interdum.</p>
-              </Carousel.Caption>
-            </Carousel.Item>
-            <Carousel.Item>
-              <img
-                className="d-block w-100"
-                src="https://via.placeholder.com/800x400.png?text=Camera+2"
-                alt="Second slide"
-              />
-              <Carousel.Caption>
-                <h3>Second slide label</h3>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-              </Carousel.Caption>
-            </Carousel.Item>
-            <Carousel.Item>
-              <img
-                className="d-block w-100"
-                src="https://via.placeholder.com/800x400.png?text=Camera+3"
-                alt="Third slide"
-              />
-              <Carousel.Caption>
-                <h3>Third slide label</h3>
-                <p>Praesent commodo cursus magna, vel scelerisque nisl consectetur.</p>
-              </Carousel.Caption>
-            </Carousel.Item>
-          </Carousel>
-          <Button variant="primary" className="mt-4">Shop Now</Button>
+          <div className="promo-banner">
+            <h1>Welcome to Camera Kingdom</h1>
+            <p>Your one-stop shop for all camera needs</p>
+          </div>
         </Col>
+      </Row>
+      <h2>Featured Products</h2>
+      <Row>
+        {recommendedProducts.map((product) => (
+          <Col key={product.id} md={4}>
+            <Card>
+              <Card.Img variant="top" src={product.imageUrl} />
+              <Card.Body>
+                <Card.Title>{product.name}</Card.Title>
+                <Card.Text>{product.description}</Card.Text>
+                <Card.Text>${product.price}</Card.Text>
+              </Card.Body>
+            </Card>
+          </Col>
+        ))}
       </Row>
     </Container>
   );

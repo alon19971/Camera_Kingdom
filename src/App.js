@@ -4,7 +4,8 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import NavBar from './components/NavBar';
 import Home from './pages/Home';
 import Auth from './pages/Auth';
-import Product from './pages/Product';
+import ProductList from './pages/ProductList';
+import ProductDetails from './pages/ProductDetails';
 import Categories from './pages/Categories';
 import Contact from './pages/Contact';
 import Cart from './pages/Cart';
@@ -22,7 +23,8 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/auth" element={<Auth />} />
-          <Route path="/product/:id" element={<Product product={{ id: 1, name: 'Camera', description: 'A high-quality camera', price: 299.99, image: 'camera.jpg' }} />} />
+          <Route path="/products" element={<ProductList />} />
+          <Route path="/product/:id" element={<ProductDetails />} />
           <Route path="/categories" element={<Categories />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/cart" element={<Cart />} />
