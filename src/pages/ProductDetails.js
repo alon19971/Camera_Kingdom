@@ -1,36 +1,23 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Button, Container, Row, Col, Image, ListGroup, Card } from "react-bootstrap";
 import { useParams } from "react-router-dom";
 import { useProductContext } from "../contexts/ProductContext";
 
 const ProductDetails = () => {
   const { id } = useParams();
-  const { getProductById, getRelatedProducts } = useProductContext();
-  const [product, setProduct] = useState(null);
-  const [relatedProducts, setRelatedProducts] = useState([]);
-
-  useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const fetchedProduct = await getProductById(id);
-        setProduct(fetchedProduct);
-        const related = getRelatedProducts(fetchedProduct.category);
-        setRelatedProducts(related);
-      } catch (error) {
-        console.error("Failed to fetch product:", error);
-      }
-    };
-
-    fetchProduct();
-  }, [id, getProductById, getRelatedProducts]);
-
-  if (!product) return <p>Loading...</p>;
+  const { getProduct, getRelatedProducts } = useProductContext();
+  const product = getProduct(id);
+  const relatedProducts = getRelatedProducts(product.category);
 
   return (
     <Container className="mt-4">
       <Row>
         <Col md={6}>
-          <Image src={product.image1} fluid style={{ maxHeight: "400px" }} />
+          <Image 
+            src={product.image1} 
+            fluid 
+            style={{ maxHeight: "350px", objectFit: "contain", marginBottom: "20px" }} 
+          />
         </Col>
         <Col md={6}>
           <h2>{product.brand} {product.model}</h2>
@@ -46,28 +33,41 @@ const ProductDetails = () => {
             <ListGroup.Item><strong>Weight:</strong> 350g</ListGroup.Item>
             <ListGroup.Item><strong>Brand:</strong> {product.brand}</ListGroup.Item>
             <ListGroup.Item><strong>Lens Type:</strong> Prime</ListGroup.Item>
-            <ListGroup.Item><strong>Customer Reviews:</strong></ListGroup.Item>
+          </ListGroup>
+        </Col>
+      </Row>
+      <hr />
+      <Row>
+        <Col md={6}>
+          <h4>Customer Reviews</h4>
+          <ListGroup variant="flush" className="mb-4">
             <ListGroup.Item>"Amazing quality, highly recommended!" - John Doe</ListGroup.Item>
             <ListGroup.Item>"A bit pricey, but worth every penny." - Jane Smith</ListGroup.Item>
             <ListGroup.Item>"Very satisfied with the purchase." - Mike Johnson</ListGroup.Item>
           </ListGroup>
         </Col>
-      </Row>
-      <hr />
-      <h4>Related Products</h4>
-      <Row>
-        {relatedProducts.map((relatedProduct) => (
-          <Col key={relatedProduct.id} md={4} className="mb-4">
-            <Card>
-              <Card.Img variant="top" src={relatedProduct.image1} height={200} />
-              <Card.Body>
-                <Card.Title>{relatedProduct.brand} {relatedProduct.model}</Card.Title>
-                <Card.Text>{relatedProduct.price}₪ ILS</Card.Text>
-                <Button variant="primary" href={`/product/${relatedProduct.id}`}>View Product</Button>
-              </Card.Body>
-            </Card>
-          </Col>
-        ))}
+        <Col md={6}>
+          <h4>Related Products</h4>
+          <Row>
+            {relatedProducts.map((relatedProduct) => (
+              <Col key={relatedProduct.id} md={4} className="mb-3">
+                <Card>
+                  <Card.Img 
+                    variant="top" 
+                    src={relatedProduct.image1} 
+                    height={150} 
+                    style={{ objectFit: "cover" }} 
+                  />
+                  <Card.Body>
+                    <Card.Title>{relatedProduct.brand} {relatedProduct.model}</Card.Title>
+                    <Card.Text>{relatedProduct.price}₪ ILS</Card.Text>
+                    <Button variant="primary" href={`/product/${relatedProduct.id}`}>View Product</Button>
+                  </Card.Body>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+        </Col>
       </Row>
     </Container>
   );
