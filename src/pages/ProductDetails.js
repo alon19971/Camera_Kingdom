@@ -3,25 +3,53 @@ import { Button, Container, Row, Col, Image, ListGroup, Card } from "react-boots
 import { useParams } from "react-router-dom";
 import { useProductContext } from "../contexts/ProductContext";
 
+// Sample customer reviews to randomize from
+const reviews = [
+  { review: "Amazing quality, highly recommended!", name: "John Doe" },
+  { review: "A bit pricey, but worth every penny.", name: "Jane Smith" },
+  { review: "Very satisfied with the purchase.", name: "Mike Johnson" },
+  { review: "Top-notch service and product.", name: "Sarah Connor" },
+  { review: "Exceeded my expectations.", name: "James Bond" },
+  { review: "Best purchase I've made this year.", name: "Bruce Wayne" },
+  { review: "Highly recommend to anyone!", name: "Clark Kent" },
+  { review: "Great value for the money.", name: "Diana Prince" },
+  { review: "Will definitely buy again.", name: "Peter Parker" }
+];
+
+// Function to get random reviews
+const getRandomReviews = (count) => {
+  let shuffled = [...reviews].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+};
+
+// Function to calculate a discount (20% in this case)
+const applyDiscount = (price) => {
+  return price * 0.8; // Apply a 20% discount
+};
+
 const ProductDetails = () => {
   const { id } = useParams();
   const { getProduct, getRelatedProducts } = useProductContext();
   const product = getProduct(id);
   const relatedProducts = getRelatedProducts(product.category);
+  const randomReviews = getRandomReviews(5);  // Get 5 random reviews
 
   return (
     <Container className="mt-4">
       <Row>
         <Col md={6}>
-          <Image 
-            src={product.image1} 
-            fluid 
-            style={{ maxHeight: "350px", objectFit: "contain", marginBottom: "20px" }} 
-          />
+          <Image src={product.image1} fluid style={{ maxHeight: "400px" }} />
         </Col>
         <Col md={6}>
           <h2>{product.brand} {product.model}</h2>
-          <h4>{product.price}₪ ILS</h4>
+          <h4>
+            <span style={{ textDecoration: 'line-through', color: '#8b8b8b', marginRight: '10px' }}>
+              {product.price}₪
+            </span>
+            <span style={{ color: '#A70000', fontWeight: 'bold', fontSize: '1.3em' }}>  {/* Smaller font size */}
+              {applyDiscount(product.price).toFixed(2)}₪ ILS
+            </span>
+          </h4>
           <Button variant="success" className="me-2">Buy now</Button>
           <Button variant="primary" className="me-2">Add to cart</Button>
           <Button variant="outline-secondary">Add to Wishlist</Button>
@@ -38,29 +66,33 @@ const ProductDetails = () => {
       </Row>
       <hr />
       <Row>
-        <Col md={6}>
+        <Col md={6} className="text-start">
           <h4>Customer Reviews</h4>
-          <ListGroup variant="flush" className="mb-4">
-            <ListGroup.Item>"Amazing quality, highly recommended!" - John Doe</ListGroup.Item>
-            <ListGroup.Item>"A bit pricey, but worth every penny." - Jane Smith</ListGroup.Item>
-            <ListGroup.Item>"Very satisfied with the purchase." - Mike Johnson</ListGroup.Item>
+          <ListGroup variant="flush">
+            {randomReviews.map((review, index) => (
+              <ListGroup.Item key={index}>
+                "{review.review}" - {review.name}
+              </ListGroup.Item>
+            ))}
           </ListGroup>
         </Col>
         <Col md={6}>
-          <h4>Related Products</h4>
+          <h4 className="text-center">Related Products</h4>  {/* Centered title */}
           <Row>
             {relatedProducts.map((relatedProduct) => (
-              <Col key={relatedProduct.id} md={4} className="mb-3">
+              <Col key={relatedProduct.id} md={4} className="mb-4">
                 <Card>
-                  <Card.Img 
-                    variant="top" 
-                    src={relatedProduct.image1} 
-                    height={150} 
-                    style={{ objectFit: "cover" }} 
-                  />
+                  <Card.Img variant="top" src={relatedProduct.image1} style={{ height: "150px", width: "auto", objectFit: "contain" }} />
                   <Card.Body>
                     <Card.Title>{relatedProduct.brand} {relatedProduct.model}</Card.Title>
-                    <Card.Text>{relatedProduct.price}₪ ILS</Card.Text>
+                    <Card.Text>
+                      <span style={{ textDecoration: 'line-through', color: '#8b8b8b', marginRight: '10px' }}>
+                        {relatedProduct.price}₪
+                      </span>
+                      <span style={{ color: '#A70000', fontWeight: 'bold', fontSize: '1.3em' }}>  {/* Smaller font size */}
+                        {applyDiscount(relatedProduct.price).toFixed(2)}₪ ILS
+                      </span>
+                    </Card.Text>
                     <Button variant="primary" href={`/product/${relatedProduct.id}`}>View Product</Button>
                   </Card.Body>
                 </Card>
