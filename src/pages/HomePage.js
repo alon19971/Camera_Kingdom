@@ -2,6 +2,8 @@ import React from "react";
 import { Container, Row, Col, Carousel } from "react-bootstrap";
 import { useProductContext } from "../contexts/ProductContext";
 
+// Home Page file
+
 const HomePage = () => {
   const { allProducts } = useProductContext();
 
