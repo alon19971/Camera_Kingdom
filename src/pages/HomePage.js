@@ -1,11 +1,12 @@
 import React from "react";
-import { Container, Row, Col, Carousel } from "react-bootstrap";
+import { Container, Row, Col, Carousel, Button } from "react-bootstrap";
 import { useProductContext } from "../contexts/ProductContext";
-
-// Home Page file
+import { Link } from "react-router-dom";
+import { FaQuoteLeft } from "react-icons/fa";  // Importing icon for quotes
 
 const HomePage = () => {
   const { allProducts } = useProductContext();
+  const featuredProducts = allProducts.slice(0, 5); // Display first 5 products
 
   return (
     <Container fluid className="p-0">
@@ -16,7 +17,7 @@ const HomePage = () => {
             className="d-block w-100"
             src={require("../assets/Nikon-Z6.jpg")}
             alt="Nikon Z6III"
-            style={{ height: "500px", objectFit: "cover" }}
+            style={{ height: "400px", objectFit: "cover" }}
           />
         </Carousel.Item>
         <Carousel.Item>
@@ -24,7 +25,7 @@ const HomePage = () => {
             className="d-block w-100"
             src={require("../assets/Nikon-Z8.jpg")}
             alt="Nikon Z8"
-            style={{ height: "500px", objectFit: "cover" }}
+            style={{ height: "400px", objectFit: "cover" }}
           />
         </Carousel.Item>
         <Carousel.Item>
@@ -32,7 +33,7 @@ const HomePage = () => {
             className="d-block w-100"
             src={require("../assets/Leica-Q3.jpg")}
             alt="Leica Q3"
-            style={{ height: "500px", objectFit: "cover" }}
+            style={{ height: "400px", objectFit: "cover" }}
           />
         </Carousel.Item>
       </Carousel>
@@ -47,27 +48,50 @@ const HomePage = () => {
             </div>
           </Col>
         </Row>
+
         <h2 className="mb-3 text-center">Featured Products</h2>
-        <Row>
-          <Col>
-            <Carousel className="featured-carousel">
-              {allProducts.map((product) => (
-                <Carousel.Item key={product.id} interval={3000}>
-                  <img src={product.image1} height={200} alt={product.model} />
-                  <Carousel.Caption
-                    style={{
-                      position: "static",
-                      paddingTop: "10px",
-                      color: "black",
-                    }}
-                  >
-                    <h3>{product.model}</h3>
-                    <p>{product.brand}</p>
-                  </Carousel.Caption>
-                </Carousel.Item>
-              ))}
-            </Carousel>
-          </Col>
+        <Row className="justify-content-center">
+          {featuredProducts.map((product) => (
+            <Col key={product.id} md={2} className="mb-4">
+              <div className="card text-center">
+                <img
+                  src={product.image1}
+                  className="card-img-top"
+                  alt={product.model}
+                  style={{ height: "150px", objectFit: "contain" }}
+                />
+                <div className="card-body">
+                  <h5 className="card-title">{product.model}</h5>
+                  <p className="card-text">{product.brand}</p>
+                  <p>{product.price}₪ ILS</p>
+                  <div className="d-flex flex-column">
+                    <Link to={`/product/${product.id}`}>
+                      <Button variant="primary" className="mb-2">
+                        View Details
+                      </Button>
+                    </Link>
+                    <Button variant="success">Add to Cart</Button>
+                  </div>
+                </div>
+              </div>
+            </Col>
+          ))}
+        </Row>
+      </Container>
+
+      {/* Our Brands */}
+      <Container className="mt-4">
+        <h2 className="text-center mb-3">Our Brands</h2>
+        <Row className="justify-content-center align-items-center">
+          {["GoPro", "Canon", "Fujifilm", "Sony", "Insta360", "Leica"].map((brand) => (
+            <Col key={brand} xs={6} sm={4} md={3} lg={2} className="text-center mb-4">
+              <img
+                src={require(`../assets/${brand}.png`)}
+                alt={brand}
+                style={{ width: "100px", height: "100px", objectFit: "contain" }}
+              />
+            </Col>
+          ))}
         </Row>
       </Container>
 
@@ -102,13 +126,25 @@ const HomePage = () => {
         <h2 className="mb-3 text-center">What Our Customers Say</h2>
         <Row className="justify-content-center">
           <Col md={4} className="text-center">
-            <p>"Great service and amazing products!" - John Doe</p>
+            <div className="card p-3 mb-3">
+              <FaQuoteLeft size={30} className="mb-3" color="#6c757d"/>
+              <p className="mb-0">"Great service and amazing products!"</p>
+              <footer className="blockquote-footer mt-2">John Doe</footer>
+            </div>
           </Col>
           <Col md={4} className="text-center">
-            <p>"Highly recommend Camera Kingdom!" - Jane Smith</p>
+            <div className="card p-3 mb-3">
+              <FaQuoteLeft size={30} className="mb-3" color="#6c757d"/>
+              <p className="mb-0">"Highly recommend Camera Kingdom!"</p>
+              <footer className="blockquote-footer mt-2">Jane Smith</footer>
+            </div>
           </Col>
           <Col md={4} className="text-center">
-            <p>"My go-to place for all camera needs." - Mike Johnson</p>
+            <div className="card p-3 mb-3">
+              <FaQuoteLeft size={30} className="mb-3" color="#6c757d"/>
+              <p className="mb-0">"My go-to place for all camera needs."</p>
+              <footer className="blockquote-footer mt-2">Mike Johnson</footer>
+            </div>
           </Col>
         </Row>
       </Container>
