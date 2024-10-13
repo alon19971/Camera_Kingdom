@@ -11,7 +11,10 @@ import LoginRegisterPage from "./pages/LoginRegisterPage";
 import WishlistPage from "./pages/WishlistPage";
 import ProfilePage from "./pages/ProfilePage";
 import OrdersPage from "./pages/OrdersPage";
-import ProductDetails from "./pages/ProductDetails"; // Import the new ProductDetails page
+import ProductDetails from "./pages/ProductDetails"; 
+import CamerasPage from "./pages/CamerasPage";   // Import Cameras Page
+import LensesPage from "./pages/LensesPage";     // Import Lenses Page
+import AccessoriesPage from "./pages/AccessoriesPage"; // Import Accessories Page
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 
@@ -25,13 +28,16 @@ function App() {
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/categories" element={<CategoriesPage />} />
+              <Route path="/categories/cameras" element={<CamerasPage />} /> {/* Cameras Route */}
+              <Route path="/categories/lenses" element={<LensesPage />} />   {/* Lenses Route */}
+              <Route path="/categories/accessories" element={<AccessoriesPage />} /> {/* Accessories Route */}
               <Route path="/contactus" element={<ContactUsPage />} />
               <Route path="/cart" element={<CartPage />} />
               <Route path="/login" element={<LoginRegisterPage />} />
               <Route path="/wishlist" element={<WishlistPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/orders" element={<OrdersPage />} />
-              <Route path="/product/:id" element={<ProductDetails />} /> {/* Add this line */}
+              <Route path="/product/:id" element={<ProductDetails />} />
             </Routes>
           </Router>
         </ProductProvider>
