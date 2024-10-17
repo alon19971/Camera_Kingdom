@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button, Container, Row, Col, Image, ListGroup, Card, Form } from "react-bootstrap";
-import { useParams, useNavigate } from "react-router-dom";  // Use useNavigate to navigate between product pages
+import { useParams, useNavigate } from "react-router-dom";  
 import { useProductContext } from "../contexts/ProductContext";
 import { useAuthContext } from "../contexts/AuthContext";
 import { db } from "../firebase/firestore";

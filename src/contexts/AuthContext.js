@@ -1,27 +1,31 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { auth, googleProvider } from "../firebase/auth";
-import {
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signOut,
-  signInWithPopup,
-  createUserWithEmailAndPassword,
-  updateProfile,
-  updateEmail,
+import { 
+  onAuthStateChanged, 
+  signInWithEmailAndPassword, 
+  signOut, 
+  signInWithPopup, 
+  createUserWithEmailAndPassword, 
+  updateProfile, 
+  updateEmail 
 } from "firebase/auth";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
+  const [isManager, setIsManager] = useState(false); // Add a state for manager check
 
   useEffect(() => {
-    // Use a listener to change the current user
     const removeAuthListener = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
+      if (user && user.email === "alonaizin123@gmail.com") {
+        setIsManager(true); // Mark user as manager
+      } else {
+        setIsManager(false); // Not a manager
+      }
     });
 
-    // Return the listener to remove it and avoid reuses
     return () => removeAuthListener();
   }, []);
 
@@ -34,15 +38,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (name, email, password) => {
-    const userCredentials = await createUserWithEmailAndPassword(
-      auth,
-      email,
-      password
-    );
-
-    await updateProfile(userCredentials.user, {
-      displayName: name,
-    });
+    const userCredentials = await createUserWithEmailAndPassword(auth, email, password);
+    await updateProfile(userCredentials.user, { displayName: name });
     return userCredentials;
   };
 
@@ -62,6 +59,7 @@ export const AuthProvider = ({ children }) => {
 
   const globalVal = {
     currentUser,
+    isManager, // Provide manager flag globally
     login,
     googleLogin,
     register,

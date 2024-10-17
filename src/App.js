@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { HashRouter as Router, Route, Routes } from "react-router-dom"; // Use HashRouter for easier routing
+import { HashRouter as Router, Route, Routes } from "react-router-dom"; 
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProductProvider } from "./contexts/ProductContext";
 import Header from "./components/layouts/Header";
@@ -18,6 +18,10 @@ import AccessoriesPage from "./pages/AccessoriesPage";
 import BagsPage from "./pages/BagsPage";           
 import LightingPage from "./pages/LightingPage";
 import TripodsPage from "./pages/TripodsPage";
+import ManagerDashboard from './pages/ManagerDashboard';
+import UserManagement from "./components/UserManagement";
+import ProductManagement from "./components/ProductManagement";
+import OrderManagement from "./components/OrderManagement";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 
@@ -52,6 +56,10 @@ function App() {
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/orders" element={<OrdersPage />} />
               <Route path="/product/:id" element={<ProductDetails />} />
+              <Route path="/manager" element={<ManagerDashboard />} />
+              <Route path="/manager/users" element={<UserManagement />} />
+              <Route path="/manager/products" element={<ProductManagement />} />
+              <Route path="/manager/orders" element={<OrderManagement />} />
             </Routes>
           </Router>
         </ProductProvider>

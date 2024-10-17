@@ -48,10 +48,10 @@ const Header = () => {
                 <h6 className="d-inline">{currentUser.displayName} </h6>
                 {currentUser.photoURL ? (
                   <Image
-                  src={currentUser.photoURL}
-                  roundedCircle
-                  width={30}
-                  height={30}
+                    src={currentUser.photoURL}
+                    roundedCircle
+                    width={30}
+                    height={30}
                   />
                 ) : (
                   currentUser.displayName
@@ -65,6 +65,14 @@ const Header = () => {
                 <LinkContainer to="/orders">
                   <Dropdown.Item>Orders</Dropdown.Item>
                 </LinkContainer>
+
+                {/* Manager Dashboard link, visible only to specific email */}
+                {currentUser.email === "alonaizin123@gmail.com" && (
+                  <LinkContainer to="/manager">
+                    <Dropdown.Item>Manager Dashboard</Dropdown.Item>
+                  </LinkContainer>
+                )}
+
                 <Dropdown.Divider />
                 <Dropdown.Item onClick={handleLogout} className="text-danger">
                   Logout
