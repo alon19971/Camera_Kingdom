@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Button, Container, Row, Col, Image, ListGroup, Card, Form } from "react-bootstrap";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";  // Use useNavigate to navigate between product pages
 import { useProductContext } from "../contexts/ProductContext";
 import { useAuthContext } from "../contexts/AuthContext";
 import { db } from "../firebase/firestore";
 import { collection, addDoc, getDocs, doc, deleteDoc, query, where } from "firebase/firestore";
 import { FaTrashAlt } from 'react-icons/fa';  
 
-// Sample reviews
 const initialReviews = [
   { review: "Amazing quality, highly recommended!", name: "John Doe", date: "2024-09-15" },
   { review: "A bit pricey, but worth every penny.", name: "Jane Smith", date: "2024-08-22" },
@@ -25,8 +24,9 @@ const ProductDetails = () => {
   const { currentUser } = useAuthContext();
   const product = getProduct(id);
   const relatedProducts = getRelatedProducts(product.category);
-  const [reviews, setReviews] = useState(initialReviews);  // State for storing reviews
+  const [reviews, setReviews] = useState(initialReviews);  
   const [newReview, setNewReview] = useState("");
+  const navigate = useNavigate();  // Initialize navigate
 
   // Fetch reviews from Firestore on component mount
   useEffect(() => {
@@ -37,15 +37,14 @@ const ProductDetails = () => {
 
       const fetchedReviews = querySnapshot.docs.map((doc) => ({
         ...doc.data(),
-        id: doc.id, // Store document ID for deletion
+        id: doc.id, 
       }));
-      setReviews([...initialReviews, ...fetchedReviews]);  // Combine static and dynamic reviews
+      setReviews([...initialReviews, ...fetchedReviews]);  
     };
 
     fetchReviews();
   }, [id]);
 
-  // Handle adding a review
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
 
@@ -53,25 +52,24 @@ const ProductDetails = () => {
 
     const reviewToAdd = {
       review: newReview,
-      name: currentUser?.displayName || "Anonymous", // Use logged-in user's name or 'Anonymous'
-      date: new Date().toISOString().split("T")[0],  // Current date in YYYY-MM-DD format
+      name: currentUser?.displayName || "Anonymous", 
+      date: new Date().toISOString().split("T")[0],  
       productId: id,
     };
 
     try {
       const docRef = await addDoc(collection(db, "reviews"), reviewToAdd);
-      setReviews([...reviews, { ...reviewToAdd, id: docRef.id }]);  // Update local state with new review
-      setNewReview("");  // Clear the input box
+      setReviews([...reviews, { ...reviewToAdd, id: docRef.id }]);  
+      setNewReview("");  
     } catch (error) {
       console.error("Error adding review: ", error);
     }
   };
 
-  // Handle deleting a review
   const handleDeleteReview = async (reviewId) => {
     try {
       await deleteDoc(doc(db, "reviews", reviewId));
-      setReviews(reviews.filter((review) => review.id !== reviewId));  // Remove from local state
+      setReviews(reviews.filter((review) => review.id !== reviewId));  
     } catch (error) {
       console.error("Error deleting review: ", error);
     }
@@ -120,7 +118,7 @@ const ProductDetails = () => {
                 {currentUser?.displayName === review.name && (
                   <FaTrashAlt
                     className="text-danger ms-3"
-                    onClick={() => handleDeleteReview(review.id)}  // Delete only for user's own reviews
+                    onClick={() => handleDeleteReview(review.id)}  
                     style={{ cursor: "pointer" }}
                   />
                 )}
@@ -128,7 +126,6 @@ const ProductDetails = () => {
             ))}
           </ListGroup>
 
-          {/* Review submission form */}
           <Form onSubmit={handleReviewSubmit} className="mt-4">
             <Form.Group controlId="reviewInput">
               <Form.Label>Leave a Review:</Form.Label>
@@ -159,7 +156,8 @@ const ProductDetails = () => {
                         {applyDiscount(relatedProduct.price).toFixed(2)}₪ ILS
                       </span>
                     </Card.Text>
-                    <Button variant="primary" href={`/product/${relatedProduct.id}`}>View Product</Button>
+                    {/* On clicking 'View Product', navigate to the new product page */}
+                    <Button variant="primary" onClick={() => navigate(`/product/${relatedProduct.id}`)}>View Product</Button>
                   </Card.Body>
                 </Card>
               </Col>

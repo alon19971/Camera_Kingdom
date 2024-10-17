@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { HashRouter as Router, Route, Routes } from "react-router-dom"; // Use HashRouter for easier routing
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProductProvider } from "./contexts/ProductContext";
 import Header from "./components/layouts/Header";
@@ -21,7 +21,6 @@ import TripodsPage from "./pages/TripodsPage";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 
-// ScrollToTop Component to prevent automatic scroll behavior
 function ScrollToTop() {
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -34,8 +33,8 @@ function App() {
     <div className="App">
       <AuthProvider>
         <ProductProvider>
-          <Router>
-            <ScrollToTop /> {/* Add ScrollToTop here */}
+          <Router> {/* Use HashRouter to handle page refresh issue */}
+            <ScrollToTop />
             <Header />
             <Routes>
               <Route path="/" element={<HomePage />} />
@@ -43,6 +42,9 @@ function App() {
               <Route path="/categories/cameras" element={<CamerasPage />} />
               <Route path="/categories/lenses" element={<LensesPage />} />
               <Route path="/categories/accessories" element={<AccessoriesPage />} />
+              <Route path="/categories/bags" element={<BagsPage />} />
+              <Route path="/categories/lighting" element={<LightingPage />} />
+              <Route path="/categories/tripods" element={<TripodsPage />} />
               <Route path="/contactus" element={<ContactUsPage />} />
               <Route path="/cart" element={<CartPage />} />
               <Route path="/login" element={<LoginRegisterPage />} />
@@ -50,9 +52,6 @@ function App() {
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/orders" element={<OrdersPage />} />
               <Route path="/product/:id" element={<ProductDetails />} />
-              <Route path="/categories/bags" element={<BagsPage />} />
-              <Route path="/categories/lighting" element={<LightingPage />} />
-              <Route path="/categories/tripods" element={<TripodsPage />} />
             </Routes>
           </Router>
         </ProductProvider>
