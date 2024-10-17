@@ -1,44 +1,87 @@
-import React from "react";
-import { Button, Container, Row, Col, Image, ListGroup, Card } from "react-bootstrap";
+import React, { useEffect, useState } from "react";
+import { Button, Container, Row, Col, Image, ListGroup, Card, Form } from "react-bootstrap";
 import { useParams } from "react-router-dom";
 import { useProductContext } from "../contexts/ProductContext";
+import { useAuthContext } from "../contexts/AuthContext";
+import { db } from "../firebase/firestore";
+import { collection, addDoc, getDocs, doc, deleteDoc, query, where } from "firebase/firestore";
+import { FaTrashAlt } from 'react-icons/fa';  
 
-// Sample customer reviews to randomize from
-const reviews = [
-  { review: "Amazing quality, highly recommended!", name: "John Doe" },
-  { review: "A bit pricey, but worth every penny.", name: "Jane Smith" },
-  { review: "Very satisfied with the purchase.", name: "Mike Johnson" },
-  { review: "Top-notch service and product.", name: "Sarah Connor" },
-  { review: "Exceeded my expectations.", name: "James Bond" },
-  { review: "Best purchase I've made this year.", name: "Bruce Wayne" },
-  { review: "Highly recommend to anyone!", name: "Clark Kent" },
-  { review: "Great value for the money.", name: "Diana Prince" },
-  { review: "Will definitely buy again.", name: "Peter Parker" }
+// Sample reviews
+const initialReviews = [
+  { review: "Amazing quality, highly recommended!", name: "John Doe", date: "2024-09-15" },
+  { review: "A bit pricey, but worth every penny.", name: "Jane Smith", date: "2024-08-22" },
+  { review: "Very satisfied with the purchase.", name: "Mike Johnson", date: "2024-10-03" },
+  { review: "Top-notch service and product.", name: "Sarah Connor", date: "2024-07-19" },
+  { review: "Exceeded my expectations.", name: "James Bond", date: "2024-06-11" },
+  { review: "Best purchase I've made this year.", name: "Bruce Wayne", date: "2024-05-27" },
 ];
 
-// Function to get random reviews
-const getRandomReviews = (count) => {
-  let shuffled = [...reviews].sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, count);
-};
-
-// Function to calculate a discount (20% in this case)
-const applyDiscount = (price) => {
-  return price * 0.8; // Apply a 20% discount
-};
+const applyDiscount = (price) => price * 0.8;
 
 const ProductDetails = () => {
   const { id } = useParams();
   const { getProduct, getRelatedProducts } = useProductContext();
+  const { currentUser } = useAuthContext();
   const product = getProduct(id);
   const relatedProducts = getRelatedProducts(product.category);
-  const randomReviews = getRandomReviews(5);  // Get 5 random reviews
+  const [reviews, setReviews] = useState(initialReviews);  // State for storing reviews
+  const [newReview, setNewReview] = useState("");
+
+  // Fetch reviews from Firestore on component mount
+  useEffect(() => {
+    const fetchReviews = async () => {
+      const reviewsCollection = collection(db, "reviews");
+      const q = query(reviewsCollection, where("productId", "==", id));
+      const querySnapshot = await getDocs(q);
+
+      const fetchedReviews = querySnapshot.docs.map((doc) => ({
+        ...doc.data(),
+        id: doc.id, // Store document ID for deletion
+      }));
+      setReviews([...initialReviews, ...fetchedReviews]);  // Combine static and dynamic reviews
+    };
+
+    fetchReviews();
+  }, [id]);
+
+  // Handle adding a review
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!newReview.trim()) return;
+
+    const reviewToAdd = {
+      review: newReview,
+      name: currentUser?.displayName || "Anonymous", // Use logged-in user's name or 'Anonymous'
+      date: new Date().toISOString().split("T")[0],  // Current date in YYYY-MM-DD format
+      productId: id,
+    };
+
+    try {
+      const docRef = await addDoc(collection(db, "reviews"), reviewToAdd);
+      setReviews([...reviews, { ...reviewToAdd, id: docRef.id }]);  // Update local state with new review
+      setNewReview("");  // Clear the input box
+    } catch (error) {
+      console.error("Error adding review: ", error);
+    }
+  };
+
+  // Handle deleting a review
+  const handleDeleteReview = async (reviewId) => {
+    try {
+      await deleteDoc(doc(db, "reviews", reviewId));
+      setReviews(reviews.filter((review) => review.id !== reviewId));  // Remove from local state
+    } catch (error) {
+      console.error("Error deleting review: ", error);
+    }
+  };
 
   return (
     <Container className="mt-4">
       <Row>
         <Col md={6}>
-          <Image src={product.image1} fluid style={{ maxHeight: "400px" }} />
+          <Image src={product.image1} fluid style={{ maxHeight: "300px", width: "auto" }} />
         </Col>
         <Col md={6}>
           <h2>{product.brand} {product.model}</h2>
@@ -46,7 +89,7 @@ const ProductDetails = () => {
             <span style={{ textDecoration: 'line-through', color: '#8b8b8b', marginRight: '10px' }}>
               {product.price}₪
             </span>
-            <span style={{ color: '#A70000', fontWeight: 'bold', fontSize: '1.3em' }}>  {/* Smaller font size */}
+            <span style={{ color: '#A70000', fontWeight: 'bold', fontSize: '1.3em' }}>
               {applyDiscount(product.price).toFixed(2)}₪ ILS
             </span>
           </h4>
@@ -69,15 +112,38 @@ const ProductDetails = () => {
         <Col md={6} className="text-start">
           <h4>Customer Reviews</h4>
           <ListGroup variant="flush">
-            {randomReviews.map((review, index) => (
-              <ListGroup.Item key={index}>
-                "{review.review}" - {review.name}
+            {reviews.map((review) => (
+              <ListGroup.Item key={review.id || review.name}>
+                <p>"{review.review}"</p>
+                <p><strong>- {review.name}</strong></p>
+                <small className="text-muted">{new Date(review.date).toLocaleDateString()}</small>
+                {currentUser?.displayName === review.name && (
+                  <FaTrashAlt
+                    className="text-danger ms-3"
+                    onClick={() => handleDeleteReview(review.id)}  // Delete only for user's own reviews
+                    style={{ cursor: "pointer" }}
+                  />
+                )}
               </ListGroup.Item>
             ))}
           </ListGroup>
+
+          {/* Review submission form */}
+          <Form onSubmit={handleReviewSubmit} className="mt-4">
+            <Form.Group controlId="reviewInput">
+              <Form.Label>Leave a Review:</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Write your review here..."
+                value={newReview}
+                onChange={(e) => setNewReview(e.target.value)}
+              />
+            </Form.Group>
+            <Button type="submit" variant="primary" className="mt-3">Submit Review</Button>
+          </Form>
         </Col>
         <Col md={6}>
-          <h4 className="text-center">Related Products</h4>  {/* Centered title */}
+          <h4 className="text-center">Related Products</h4>
           <Row>
             {relatedProducts.map((relatedProduct) => (
               <Col key={relatedProduct.id} md={4} className="mb-4">
@@ -89,7 +155,7 @@ const ProductDetails = () => {
                       <span style={{ textDecoration: 'line-through', color: '#8b8b8b', marginRight: '10px' }}>
                         {relatedProduct.price}₪
                       </span>
-                      <span style={{ color: '#A70000', fontWeight: 'bold', fontSize: '1.3em' }}>  {/* Smaller font size */}
+                      <span style={{ color: '#A70000', fontWeight: 'bold', fontSize: '1.3em' }}>
                         {applyDiscount(relatedProduct.price).toFixed(2)}₪ ILS
                       </span>
                     </Card.Text>

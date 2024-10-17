@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProductProvider } from "./contexts/ProductContext";
@@ -11,12 +11,23 @@ import LoginRegisterPage from "./pages/LoginRegisterPage";
 import WishlistPage from "./pages/WishlistPage";
 import ProfilePage from "./pages/ProfilePage";
 import OrdersPage from "./pages/OrdersPage";
-import ProductDetails from "./pages/ProductDetails"; 
-import CamerasPage from "./pages/CamerasPage";   // Import Cameras Page
-import LensesPage from "./pages/LensesPage";     // Import Lenses Page
-import AccessoriesPage from "./pages/AccessoriesPage"; // Import Accessories Page
+import ProductDetails from "./pages/ProductDetails";
+import CamerasPage from "./pages/CamerasPage";   
+import LensesPage from "./pages/LensesPage";     
+import AccessoriesPage from "./pages/AccessoriesPage"; 
+import BagsPage from "./pages/BagsPage";           
+import LightingPage from "./pages/LightingPage";
+import TripodsPage from "./pages/TripodsPage";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
+
+// ScrollToTop Component to prevent automatic scroll behavior
+function ScrollToTop() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  return null;
+}
 
 function App() {
   return (
@@ -24,13 +35,14 @@ function App() {
       <AuthProvider>
         <ProductProvider>
           <Router>
+            <ScrollToTop /> {/* Add ScrollToTop here */}
             <Header />
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/categories" element={<CategoriesPage />} />
-              <Route path="/categories/cameras" element={<CamerasPage />} /> {/* Cameras Route */}
-              <Route path="/categories/lenses" element={<LensesPage />} />   {/* Lenses Route */}
-              <Route path="/categories/accessories" element={<AccessoriesPage />} /> {/* Accessories Route */}
+              <Route path="/categories/cameras" element={<CamerasPage />} />
+              <Route path="/categories/lenses" element={<LensesPage />} />
+              <Route path="/categories/accessories" element={<AccessoriesPage />} />
               <Route path="/contactus" element={<ContactUsPage />} />
               <Route path="/cart" element={<CartPage />} />
               <Route path="/login" element={<LoginRegisterPage />} />
@@ -38,6 +50,9 @@ function App() {
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/orders" element={<OrdersPage />} />
               <Route path="/product/:id" element={<ProductDetails />} />
+              <Route path="/categories/bags" element={<BagsPage />} />
+              <Route path="/categories/lighting" element={<LightingPage />} />
+              <Route path="/categories/tripods" element={<TripodsPage />} />
             </Routes>
           </Router>
         </ProductProvider>

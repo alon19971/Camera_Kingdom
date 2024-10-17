@@ -25,7 +25,7 @@ const LensesPage = () => {
       <h2 className="text-center mt-4 mb-4">Lenses</h2>
       <Form.Control
         type="text"
-        placeholder="Search for products..."
+        placeholder="Search for lenses..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         className="mb-4"
