@@ -1,18 +1,30 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Form, Card, Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { useProductContext } from "../contexts/ProductContext";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "../firebase/firestore";
 
 const CamerasPage = () => {
-  const { allProducts } = useProductContext();
+  const [cameras, setCameras] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Filter only camera products
-  const filteredCameras = allProducts.filter(
+  useEffect(() => {
+    // Fetch cameras from Firestore based on category "cameras"
+    const fetchCameras = async () => {
+      const q = query(collection(db, "products"), where("category", "==", "cameras"));
+      const querySnapshot = await getDocs(q);
+      const camerasData = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setCameras(camerasData);
+    };
+
+    fetchCameras();
+  }, []);
+
+  // Filter the products based on the search term
+  const filteredCameras = cameras.filter(
     (product) =>
-      product.category === "cameras" &&
-      (product.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.brand.toLowerCase().includes(searchTerm.toLowerCase()))
+      product.model?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.brand?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const applyDiscount = (price, discount) => {
@@ -36,11 +48,11 @@ const CamerasPage = () => {
           <Col key={product.id} md={4} className="mb-4">
             <Card>
               <Link to={`/product/${product.id}`}>
-                <Card.Img
-                  variant="top"
-                  src={product.image1}
-                  style={{ height: "150px", width: "auto", objectFit: "contain" }}
-                />
+              <Card.Img
+  variant="top"
+  src={product.imageUrl ? product.imageUrl : "/path/to/defaultImage.jpg"} // Fallback image
+  style={{ height: "150px", width: "auto", objectFit: "contain", margin: "0 auto" }}
+/>
               </Link>
               <Card.Body>
                 <Card.Title>{product.brand}</Card.Title>

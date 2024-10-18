@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { db } from "../firebase/firestore";
-import { collection, getDocs, addDoc, deleteDoc, doc } from "firebase/firestore";
+import { collection, addDoc, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { Table, Button, Form } from "react-bootstrap";
 
 
@@ -8,10 +8,12 @@ import { Table, Button, Form } from "react-bootstrap";
 const ProductManagement = () => {
   const [products, setProducts] = useState([]);
   const [newProduct, setNewProduct] = useState({
-    name: "",
-    price: "",
+    brand: "",
     category: "",
-    imageUrl: "",
+    image1: "",
+    model: "",
+    price: "",
+    type: ""
   });
 
   useEffect(() => {
@@ -30,33 +32,37 @@ const ProductManagement = () => {
   };
 
   // Handle adding a new product
-const handleAddProduct = async () => {
-  try {
-    // Ensure all fields are filled
-    if (!newProduct.name || !newProduct.price || !newProduct.category || !newProduct.imageUrl) {
-      alert("Please fill all the fields.");
-      return;
+  const handleAddProduct = async () => {
+    try {
+      // Ensure all fields are filled
+      if (!newProduct.brand || !newProduct.category || !newProduct.image1 || !newProduct.model || !newProduct.price || !newProduct.type) {
+        alert("Please fill all the fields.");
+        return;
+      }
+
+      // Validate and format the product details
+      const productToAdd = {
+        brand: newProduct.brand.charAt(0).toUpperCase() + newProduct.brand.slice(1), // Capitalize the first letter
+        category: newProduct.category.toLowerCase(), // Lowercase
+        image1: newProduct.image1,
+        model: newProduct.model,
+        price: parseFloat(newProduct.price), // Ensure price is a number
+        type: newProduct.type.charAt(0).toUpperCase() + newProduct.type.slice(1) // Capitalize first letter
+      };
+
+      // Add the product to Firestore
+      await addDoc(collection(db, "products"), productToAdd);
+
+      // Update local state with the new product
+      setProducts([...products, productToAdd]);
+
+      // Clear the form
+      setNewProduct({ brand: "", category: "", image1: "", model: "", price: "", type: "" });
+      alert("Product added successfully!");
+    } catch (error) {
+      console.error("Error adding product: ", error);
     }
-
-    // Parse the price to ensure it's a number
-    const productToAdd = {
-      ...newProduct,
-      price: parseFloat(newProduct.price),  // Ensure price is a float
-    };
-
-    // Add the product to Firestore
-    await addDoc(collection(db, "products"), productToAdd);
-
-    // Update local state with the new product
-    setProducts([...products, productToAdd]);
-
-    // Clear the form
-    setNewProduct({ name: "", price: "", category: "", imageUrl: "" });
-    alert("Product added successfully!");
-  } catch (error) {
-    console.error("Error adding product: ", error);
-  }
-};
+  };
 
 
   // Handle deleting a product
@@ -75,25 +81,14 @@ const handleAddProduct = async () => {
 
       {/* Add Product Form */}
       <Form>
-        <Form.Group controlId="productName">
-          <Form.Label>Product Name</Form.Label>
+        <Form.Group controlId="productBrand">
+          <Form.Label>Brand</Form.Label>
           <Form.Control
             type="text"
-            name="name"
-            value={newProduct.name}
+            name="brand"
+            value={newProduct.brand}
             onChange={handleInputChange}
-            placeholder="Enter product name"
-          />
-        </Form.Group>
-
-        <Form.Group controlId="productPrice">
-          <Form.Label>Product Price</Form.Label>
-          <Form.Control
-            type="text"
-            name="price"
-            value={newProduct.price}
-            onChange={handleInputChange}
-            placeholder="Enter product price"
+            placeholder="Enter brand (Company name)"
           />
         </Form.Group>
 
@@ -104,18 +99,51 @@ const handleAddProduct = async () => {
             name="category"
             value={newProduct.category}
             onChange={handleInputChange}
-            placeholder="Enter category"
+            placeholder="Enter category (Lowercase)"
           />
         </Form.Group>
 
-        <Form.Group controlId="imageUrl">
+        <Form.Group controlId="productImage1">
           <Form.Label>Image URL</Form.Label>
           <Form.Control
             type="text"
-            name="imageUrl"
-            value={newProduct.imageUrl}
+            name="image1"
+            value={newProduct.image1}
             onChange={handleInputChange}
             placeholder="Enter image URL"
+          />
+        </Form.Group>
+
+        <Form.Group controlId="productModel">
+          <Form.Label>Model</Form.Label>
+          <Form.Control
+            type="text"
+            name="model"
+            value={newProduct.model}
+            onChange={handleInputChange}
+            placeholder="Enter model name"
+          />
+        </Form.Group>
+
+        <Form.Group controlId="productPrice">
+          <Form.Label>Price</Form.Label>
+          <Form.Control
+            type="number"
+            name="price"
+            value={newProduct.price}
+            onChange={handleInputChange}
+            placeholder="Enter price"
+          />
+        </Form.Group>
+
+        <Form.Group controlId="productType">
+          <Form.Label>Type</Form.Label>
+          <Form.Control
+            type="text"
+            name="type"
+            value={newProduct.type}
+            onChange={handleInputChange}
+            placeholder="Enter type (First letter capital)"
           />
         </Form.Group>
 
@@ -128,22 +156,30 @@ const handleAddProduct = async () => {
       <Table striped bordered hover className="mt-4">
         <thead>
           <tr>
-            <th>Name</th>
+            <th>Brand</th>
+            <th>Model</th>
             <th>Price</th>
             <th>Category</th>
             <th>Image</th>
+            <th>Type</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           {products.map((product) => (
             <tr key={product.id}>
-              <td>{product.name}</td>
+              <td>{product.brand}</td>
+              <td>{product.model}</td>
               <td>{product.price}</td>
               <td>{product.category}</td>
               <td>
-                <img src={product.imageUrl} alt={product.name} style={{ width: "100px" }} />
+              <img 
+                  src={product.image1} 
+                  alt={product.name} 
+                  style={{ width: "100px", height: "auto", display: "block", margin: "0 auto" }} 
+                />
               </td>
+              <td>{product.type}</td>
               <td>
                 <Button variant="warning">Edit</Button>
                 <Button variant="danger" className="ms-2" onClick={() => handleDeleteProduct(product.id)}>

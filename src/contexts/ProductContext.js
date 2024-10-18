@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { db } from "../firebase/firestore";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, onSnapshot } from "firebase/firestore";
 
 const ProductContext = createContext();
 
@@ -8,18 +8,18 @@ export const ProductProvider = ({ children }) => {
   const [allProducts, setAllProducts] = useState([]);
 
   useEffect(() => {
-    const getAllProducts = async () => {
-      const productsRef = collection(db, "products");
-      const snapshot = await getDocs(productsRef);
+    // Use onSnapshot to listen for real-time updates from the products collection
+    const productsRef = collection(db, "products");
+    const unsubscribe = onSnapshot(productsRef, (snapshot) => {
       const productList = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
-
       setAllProducts(productList);
-    };
+    });
 
-    getAllProducts();
+    // Clean up the listener on component unmount
+    return () => unsubscribe();
   }, []);
 
   const getProduct = (id) => {

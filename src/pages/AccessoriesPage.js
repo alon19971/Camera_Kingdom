@@ -10,8 +10,8 @@ const AccessoriesPage = () => {
   const filteredAccessories = allProducts.filter(
     (product) =>
       product.category === "accessories" &&
-      (product.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.brand.toLowerCase().includes(searchTerm.toLowerCase()))
+      (product.model?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.brand?.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const applyDiscount = (price, discount) => {

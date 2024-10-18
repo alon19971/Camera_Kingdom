@@ -1,10 +1,10 @@
 import React from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import cameraLogo from "../assets/Camera logo.png";   // Add your imported images
+import cameraLogo from "../assets/Camera logo.png";   
 import lensesLogo from "../assets/Lenses logo.jpeg";
 import accessoriesLogo from "../assets/Accessories logo.png";
-import bagLogo from "../assets/Bag logo.png";         // New logos
+import bagLogo from "../assets/Bag logo.png";         
 import lightingLogo from "../assets/Lighting logo.png";
 import tripodsLogo from "../assets/Tripods logo.png";
 

@@ -6,26 +6,28 @@ import { Table, Button } from "react-bootstrap";
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
 
-  useEffect(() => {
-    // Fetch all users from Firestore
-    const fetchUsers = async () => {
-      const userCollection = await getDocs(collection(db, "users"));
-      setUsers(userCollection.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-    };
+  // Fetch all users from Firestore
+  const fetchUsers = async () => {
+    const userCollection = await getDocs(collection(db, "users"));
+    setUsers(userCollection.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+  };
 
-    fetchUsers();
+  useEffect(() => {
+    fetchUsers(); // Fetch users on component mount
   }, []);
 
   // Promote a user to manager
   const promoteToManager = async (userId) => {
-    await updateDoc(doc(db, "users", userId), { role: "manager" });
-    alert("User promoted to manager!");
+    await updateDoc(doc(db, "users", userId), { role: "user" });
+    alert("User demoted to regular user!");
+    fetchUsers();  // Refresh user list after promoting
   };
 
   // Demote a manager to user
   const demoteToUser = async (userId) => {
-    await updateDoc(doc(db, "users", userId), { role: "user" });
-    alert("User demoted to regular user!");
+    await updateDoc(doc(db, "users", userId), { role: "manager" });
+    alert("User promoted to manager!");
+    fetchUsers();  // Refresh user list after demoting
   };
 
   // Delete a user account
@@ -33,6 +35,7 @@ const UserManagement = () => {
     await deleteDoc(doc(db, "users", userId));
     setUsers(users.filter((user) => user.id !== userId)); // Update UI
     alert("User account deleted!");
+    fetchUsers();  // Refresh user list after deletion
   };
 
   return (
@@ -54,13 +57,13 @@ const UserManagement = () => {
               <td>{user.email}</td>
               <td>{user.role}</td>
               <td>
-                {user.role !== "manager" ? (
-                  <Button variant="primary" onClick={() => promoteToManager(user.id)}>
+                {user.role === "user" ? (
+                  <Button variant="warning" onClick={() => demoteToUser(user.id)}>
                     Promote to Manager
                   </Button>
                 ) : (
-                  <Button variant="warning" onClick={() => demoteToUser(user.id)}>
-                    Demote to User
+                  <Button variant="warning" onClick={() => promoteToManager(user.id)}>
+                    Demote to user
                   </Button>
                 )}
                 <Button variant="danger" onClick={() => deleteUser(user.id)} className="ms-2">

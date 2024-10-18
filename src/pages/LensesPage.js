@@ -10,8 +10,8 @@ const LensesPage = () => {
   const filteredLenses = allProducts.filter(
     (product) =>
       product.category === "lenses" &&
-      (product.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.brand.toLowerCase().includes(searchTerm.toLowerCase()))
+      (product.model?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.brand?.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const applyDiscount = (price, discount) => {
