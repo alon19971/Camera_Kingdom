@@ -1,30 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Container, Row, Col, Form, Card, Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { db } from "../firebase/firestore";
+import { useProductContext } from "../contexts/ProductContext";
 
 const CamerasPage = () => {
-  const [cameras, setCameras] = useState([]);
+  const { allProducts } = useProductContext();
   const [searchTerm, setSearchTerm] = useState("");
 
-  useEffect(() => {
-    // Fetch cameras from Firestore based on category "cameras"
-    const fetchCameras = async () => {
-      const q = query(collection(db, "products"), where("category", "==", "cameras"));
-      const querySnapshot = await getDocs(q);
-      const camerasData = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setCameras(camerasData);
-    };
-
-    fetchCameras();
-  }, []);
-
-  // Filter the products based on the search term
-  const filteredCameras = cameras.filter(
+  // Filter only camera products
+  const filteredCameras = allProducts.filter(
     (product) =>
-      product.model?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.brand?.toLowerCase().includes(searchTerm.toLowerCase())
+      product.category === "cameras" &&
+      (product.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.brand.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const applyDiscount = (price, discount) => {
@@ -48,16 +36,16 @@ const CamerasPage = () => {
           <Col key={product.id} md={4} className="mb-4">
             <Card>
               <Link to={`/product/${product.id}`}>
-              <Card.Img
-  variant="top"
-  src={product.imageUrl ? product.imageUrl : "/path/to/defaultImage.jpg"} // Fallback image
-  style={{ height: "150px", width: "auto", objectFit: "contain", margin: "0 auto" }}
-/>
+                <Card.Img
+                  variant="top"
+                  src={product.image1}
+                  style={{ height: "150px", width: "auto", objectFit: "contain" }}
+                />
               </Link>
               <Card.Body>
                 <Card.Title>{product.brand}</Card.Title>
                 <Card.Text>{product.model}</Card.Text>
-                {/* Display the discounted price here */}
+                
                 <div>
                   <span style={{ textDecoration: "line-through", color: "#dc3545", marginRight: "10px" }}>
                     {product.price}₪
