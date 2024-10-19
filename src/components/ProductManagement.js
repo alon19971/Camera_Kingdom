@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { db } from "../firebase/firestore";
-import { collection, addDoc, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { collection, addDoc, getDocs, deleteDoc, updateDoc, doc } from "firebase/firestore";
 import { Table, Button, Form } from "react-bootstrap";
-
-
 
 const ProductManagement = () => {
   const [products, setProducts] = useState([]);
@@ -15,48 +13,39 @@ const ProductManagement = () => {
     price: "",
     type: ""
   });
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentProductId, setCurrentProductId] = useState(null);
 
   useEffect(() => {
-    // Fetch all products from Firestore
     const fetchProducts = async () => {
       const productCollection = await getDocs(collection(db, "products"));
       setProducts(productCollection.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
     };
-
     fetchProducts();
   }, []);
 
-  // Handle input change for new product
   const handleInputChange = (e) => {
     setNewProduct({ ...newProduct, [e.target.name]: e.target.value });
   };
 
-  // Handle adding a new product
   const handleAddProduct = async () => {
     try {
-      // Ensure all fields are filled
       if (!newProduct.brand || !newProduct.category || !newProduct.image1 || !newProduct.model || !newProduct.price || !newProduct.type) {
         alert("Please fill all the fields.");
         return;
       }
 
-      // Validate and format the product details
       const productToAdd = {
-        brand: newProduct.brand.charAt(0).toUpperCase() + newProduct.brand.slice(1), // Capitalize the first letter
-        category: newProduct.category.toLowerCase(), // Lowercase
+        brand: newProduct.brand.charAt(0).toUpperCase() + newProduct.brand.slice(1),
+        category: newProduct.category.toLowerCase(),
         image1: newProduct.image1,
         model: newProduct.model,
-        price: parseFloat(newProduct.price), // Ensure price is a number
-        type: newProduct.type.charAt(0).toUpperCase() + newProduct.type.slice(1) // Capitalize first letter
+        price: parseFloat(newProduct.price),
+        type: newProduct.type.charAt(0).toUpperCase() + newProduct.type.slice(1)
       };
 
-      // Add the product to Firestore
       await addDoc(collection(db, "products"), productToAdd);
-
-      // Update local state with the new product
       setProducts([...products, productToAdd]);
-
-      // Clear the form
       setNewProduct({ brand: "", category: "", image1: "", model: "", price: "", type: "" });
       alert("Product added successfully!");
     } catch (error) {
@@ -64,12 +53,48 @@ const ProductManagement = () => {
     }
   };
 
+  const handleEditProduct = (product) => {
+    setIsEditing(true);
+    setCurrentProductId(product.id);
+    setNewProduct({
+      brand: product.brand,
+      category: product.category,
+      image1: product.image1,
+      model: product.model,
+      price: product.price,
+      type: product.type
+    });
+  };
 
-  // Handle deleting a product
+  const handleUpdateProduct = async () => {
+    try {
+      const productRef = doc(db, "products", currentProductId);
+      await updateDoc(productRef, {
+        brand: newProduct.brand.charAt(0).toUpperCase() + newProduct.brand.slice(1),
+        category: newProduct.category.toLowerCase(),
+        image1: newProduct.image1,
+        model: newProduct.model,
+        price: parseFloat(newProduct.price),
+        type: newProduct.type.charAt(0).toUpperCase() + newProduct.type.slice(1)
+      });
+
+      const updatedProducts = products.map((product) =>
+        product.id === currentProductId ? { ...product, ...newProduct } : product
+      );
+      setProducts(updatedProducts);
+      setNewProduct({ brand: "", category: "", image1: "", model: "", price: "", type: "" });
+      setIsEditing(false);
+      setCurrentProductId(null);
+      alert("Product updated successfully!");
+    } catch (error) {
+      console.error("Error updating product: ", error);
+    }
+  };
+
   const handleDeleteProduct = async (productId) => {
     try {
       await deleteDoc(doc(db, "products", productId));
-      setProducts(products.filter((product) => product.id !== productId)); // Update UI
+      setProducts(products.filter((product) => product.id !== productId));
     } catch (error) {
       console.error("Error deleting product: ", error);
     }
@@ -79,7 +104,6 @@ const ProductManagement = () => {
     <div>
       <h3>Product Management</h3>
 
-      {/* Add Product Form */}
       <Form>
         <Form.Group controlId="productBrand">
           <Form.Label>Brand</Form.Label>
@@ -147,12 +171,11 @@ const ProductManagement = () => {
           />
         </Form.Group>
 
-        <Button className="mt-3" onClick={handleAddProduct}>
-          Add Product
+        <Button className="mt-3" onClick={isEditing ? handleUpdateProduct : handleAddProduct}>
+          {isEditing ? "Update Product" : "Add Product"}
         </Button>
       </Form>
 
-      {/* Product List */}
       <Table striped bordered hover className="mt-4">
         <thead>
           <tr>
@@ -173,7 +196,7 @@ const ProductManagement = () => {
               <td>{product.price}</td>
               <td>{product.category}</td>
               <td>
-              <img 
+                <img 
                   src={product.image1} 
                   alt={product.name} 
                   style={{ width: "100px", height: "auto", display: "block", margin: "0 auto" }} 
@@ -181,7 +204,7 @@ const ProductManagement = () => {
               </td>
               <td>{product.type}</td>
               <td>
-                <Button variant="warning">Edit</Button>
+                <Button variant="warning" onClick={() => handleEditProduct(product)}>Edit</Button>
                 <Button variant="danger" className="ms-2" onClick={() => handleDeleteProduct(product.id)}>
                   Delete
                 </Button>
