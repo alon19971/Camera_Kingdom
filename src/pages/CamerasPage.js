@@ -39,7 +39,7 @@ const CamerasPage = () => {
                 <Card.Img
                   variant="top"
                   src={product.image1}
-                  style={{ height: "150px", width: "auto", objectFit: "contain" }}
+                  style={{ height: "140px", width: "auto", objectFit: "contain" }}
                 />
               </Link>
               <Card.Body>
