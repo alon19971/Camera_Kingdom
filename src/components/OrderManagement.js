@@ -9,7 +9,7 @@ const OrderManagement = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [newStatus, setNewStatus] = useState("");
-  const [showRefundConfirm, setShowRefundConfirm] = useState(false); 
+  const [showRefundConfirm, setShowRefundConfirm] = useState(false); // For refund confirmation
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
