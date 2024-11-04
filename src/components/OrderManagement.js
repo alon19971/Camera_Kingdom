@@ -118,8 +118,13 @@ const OrderManagement = () => {
               {orders.map((order) => (
                 <tr key={order.id}>
                   <td>{order.id}</td>
+<<<<<<< HEAD
                   <td>{order.customerName}</td>
                   <td>{order.totalPrice}₪</td>
+=======
+                  <td>{order.customer.fullName}</td>
+                  <td>{order.purchase.totalPrice}₪</td>
+>>>>>>> 893f93c (Added new sorting and search features for category pages)
                   <td>{order.status}</td>
                   <td>
                     <Button variant="info" onClick={() => handleShowDetails(order)}>
