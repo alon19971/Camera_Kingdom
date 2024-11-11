@@ -1,19 +1,59 @@
-import React from "react";
-import { Container, Row, Col, Form, Button } from "react-bootstrap";
+import React, { useState } from "react";
+import { Container, Row, Col, Form, Button, Alert } from "react-bootstrap";
+import { db } from "../firebase/firestore";
+import { collection, addDoc } from "firebase/firestore";
 
 const ContactUsPage = () => {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    message: ""
+  });
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.name || !formData.email || !formData.message) {
+      setError("All fields are required.");
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, "messages"), {
+        ...formData,
+        createdAt: new Date()
+      });
+      setSubmitted(true);
+      setError(null);
+      setFormData({ name: "", email: "", message: "" });
+    } catch (err) {
+      console.error("Error sending message:", err);
+      setError("Failed to send message. Please try again later.");
+    }
+  };
+
   return (
     <Container>
       <Row>
         <Col className="mt-4">
           <h2 className="mb-4">Contact Us</h2>
-          <Form>
+          {error && <Alert variant="danger">{error}</Alert>}
+          {submitted && <Alert variant="success">Message sent successfully!</Alert>}
+          <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3" controlId="formBasicName">
               <Form.Label>Name</Form.Label>
               <Form.Control
                 className="form-controls"
                 type="text"
                 placeholder="Enter your name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
               />
             </Form.Group>
             <Form.Group className="mb-3" controlId="formBasicEmail">
@@ -22,11 +62,21 @@ const ContactUsPage = () => {
                 className="form-controls"
                 type="email"
                 placeholder="Enter email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
               />
             </Form.Group>
             <Form.Group className="mb-3" controlId="formBasicMessage">
               <Form.Label>Message</Form.Label>
-              <Form.Control className="form-controls" as="textarea" rows={3} />
+              <Form.Control
+                className="form-controls"
+                as="textarea"
+                rows={3}
+                name="message"
+                value={formData.message}
+                onChange={handleChange}
+              />
             </Form.Group>
             <Button variant="primary" type="submit">
               Send

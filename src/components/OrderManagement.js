@@ -1,7 +1,14 @@
 // components/OrderManagement.js
 import React, { useState, useEffect } from "react";
 import { db } from "../firebase/firestore";
-import { collection, getDocs, deleteDoc, updateDoc, doc } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  deleteDoc,
+  updateDoc,
+  doc,
+  increment
+} from "firebase/firestore";
 import { Table, Button, Modal, Form } from "react-bootstrap";
 
 const OrderManagement = () => {
@@ -9,7 +16,8 @@ const OrderManagement = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [newStatus, setNewStatus] = useState("");
-  const [showRefundConfirm, setShowRefundConfirm] = useState(false); // For refund confirmation
+  const [showRefundConfirm, setShowRefundConfirm] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false); // Confirm cancellation modal
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,9 +26,9 @@ const OrderManagement = () => {
         {
           id: "static_order_1",
           customerName: "John Doe",
-          totalPrice: 250.50,
+          totalPrice: 250.5,
           status: "Pending",
-          items: [{ name: "Camera", quantity: 1, price: 250.50 }],
+          items: [{ id: "product_1", name: "Camera", quantity: 1, price: 250.5 }],
         },
       ];
 
@@ -73,6 +81,7 @@ const OrderManagement = () => {
     setShowRefundConfirm(true); // Show refund confirmation
   };
 
+  // Confirm refund
   const confirmRefund = async (orderId) => {
     await updateDoc(doc(db, "orders", orderId), { status: "Refunded" });
     setOrders(
@@ -81,6 +90,40 @@ const OrderManagement = () => {
     setShowRefundConfirm(false);
     setShowDetails(false); // Close modal after refund
   };
+
+  // Show cancel confirmation modal
+  const handleCancelOrder = (order) => {
+    setSelectedOrder(order);
+    setShowCancelConfirm(true);
+  };
+
+  // Confirm order cancellation and update quantities
+const confirmCancelOrder = async (order) => {
+  try {
+    // Loop through each item in the order and update product quantities
+    const batchUpdatePromises = order.items.map((item) =>
+      updateDoc(doc(db, "products", item.id), {
+        quantity: increment(item.quantity)
+      })
+    );
+    await Promise.all(batchUpdatePromises);
+
+    // Set order status to "Canceled" in the database
+    await updateDoc(doc(db, "orders", order.id), { status: "Canceled" });
+
+    // Update the status in the local `orders` state to reflect in the UI
+    setOrders(
+      orders.map((ord) => (ord.id === order.id ? { ...ord, status: "Canceled" } : ord))
+    );
+
+    alert("Order canceled, and product quantities updated.");
+  } catch (error) {
+    console.error("Error updating quantities after cancellation:", error);
+  } finally {
+    setShowCancelConfirm(false);
+    setShowDetails(false);
+  }
+};
 
   return (
     <div>
@@ -127,6 +170,13 @@ const OrderManagement = () => {
                     </Button>
                     <Button variant="danger" onClick={() => deleteOrder(order.id)} className="ms-2">
                       Delete Order
+                    </Button>
+                    <Button
+                      variant="warning"
+                      onClick={() => handleCancelOrder(order)}
+                      className="ms-2"
+                    >
+                      Cancel Order
                     </Button>
                   </td>
                 </tr>
@@ -198,6 +248,24 @@ const OrderManagement = () => {
             </Button>
             <Button variant="secondary" onClick={() => setShowRefundConfirm(false)}>
               Cancel
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      )}
+
+      {/* Cancel order confirmation modal */}
+      {showCancelConfirm && (
+        <Modal show={showCancelConfirm} onHide={() => setShowCancelConfirm(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Confirm Cancelation</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>Are you sure you want to cancel this order and restock items?</Modal.Body>
+          <Modal.Footer>
+            <Button variant="danger" onClick={() => confirmCancelOrder(selectedOrder)}>
+              Yes, Cancel Order
+            </Button>
+            <Button variant="secondary" onClick={() => setShowCancelConfirm(false)}>
+              No, Keep Order
             </Button>
           </Modal.Footer>
         </Modal>
